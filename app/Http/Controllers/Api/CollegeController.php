@@ -19,7 +19,7 @@ class CollegeController extends Controller
             return response()->json([
                 'message' => 'No Data found!',
                 'status' => 404
-            ],404);
+            ], 404);
         }
         return response()->json([
             'message' => 'College data fetched successfully!',
@@ -121,7 +121,6 @@ class CollegeController extends Controller
             'college_image' => $request->input('college_image'),
             'updated_by' => 1,
         ]);
-        $updateCollege->save();
 
         return response()->json([
             'message' => 'College updated successfully!',
@@ -134,7 +133,7 @@ class CollegeController extends Controller
      */
     public function destroy(string $id)
     {
-        $clgDelete = College::find($id);
+        $clgDelete = College::where('id', $id)->where('status', 1)->first();
 
         if (!$clgDelete) {
             return response()->json([
