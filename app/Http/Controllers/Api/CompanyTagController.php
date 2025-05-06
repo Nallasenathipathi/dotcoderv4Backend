@@ -92,6 +92,17 @@ class CompanyTagController extends Controller
                 'status' => 404
             ], 404);
         }
+
+        $validator = Validator::make($request->all(), [
+            'tag_name' => 'required|string|max:255' . $id,
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
     
         $exists = CompanyTag::where('tag_name', $request->tag_name)
             ->where('id', '!=', $id)

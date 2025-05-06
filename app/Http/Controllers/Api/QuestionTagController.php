@@ -43,7 +43,7 @@ class QuestionTagController extends Controller
             ], 422);
         }
 
-       
+
         $createdTag = QuestionTag::create([
             'tag_name' => $request->input('tag_name'),
             'created_by' => null,
@@ -86,14 +86,25 @@ class QuestionTagController extends Controller
     public function update(Request $request, string $id)
     {
         $updateTag = QuestionTag::where('status', 1)->where('id', $id)->first();
-    
+
         if (!$updateTag) {
             return response()->json([
                 'message' => 'Tag not found!',
                 'status' => 404
             ], 404);
         }
-    
+
+        $validator = Validator::make($request->all(), [
+            'tag_name' => 'required|string|max:255' . $id,
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         $exists = QuestionTag::where('tag_name', $request->tag_name)
             ->where('id', '!=', $id)
             ->where('status', 1)
@@ -105,21 +116,17 @@ class QuestionTagController extends Controller
                 'status' => 422
             ], 422);
         }
-        
-        // Perform update
+
         $updateTag->update([
             'tag_name' => $request->input('tag_name'),
             'updated_by' => 1,
         ]);
-    
-        // Return success response
+
         return response()->json([
             'message' => 'Tag updated successfully!',
             'status' => 200
         ], 200);
     }
-    
-    
 
     /**
      * Remove the specified resource from storage.
@@ -143,5 +150,4 @@ class QuestionTagController extends Controller
             'status' => 200
         ]);
     }
-    
 }
