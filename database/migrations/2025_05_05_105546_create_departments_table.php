@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('department_short_name',50)->nullable();
             $table->integer('status')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->json('updated_by')->nullable();
+            $table->string('updated_by')->nullable();
             $table->timestamps();
         });
     }
