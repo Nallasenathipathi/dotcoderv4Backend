@@ -98,35 +98,27 @@ class CollegeController extends Controller
     public function update(Request $request, string $id)
     {
         $updateCollege = College::where('status', 1)->where('id', $id)->first();
-
+    
         if (!$updateCollege) {
             return response()->json([
                 'message' => 'College not found!',
                 'status' => 404
             ], 404);
         }
-        // $college_image_path = null;
-        // if ($request->hasFile('college_image')) {
-
-        //     $extension = $request->file('college_image')->extension();
-
-        //     $clg_imageName = time() . '.' .  $extension;
-
-        //     $college_image_path = $request->file('college_image')->storeAs('CollegeImages', $clg_imageName, 'public');
-        // }
-
+    
         $updateCollege->update([
-            'college_name' => $request->input('college_name'),
-            'college_short_name' => $request->input('college_short_name'),
-            'college_image' => $request->input('college_image'),
+            'college_name' => $request->input('college_name', $updateCollege->college_name),
+            'college_short_name' => $request->input('college_short_name', $updateCollege->college_short_name),
+            'college_image' => $request->input('college_image', $updateCollege->college_image),
             'updated_by' => 1,
         ]);
-
+    
         return response()->json([
             'message' => 'College updated successfully!',
             'status' => 200
         ], 200);
     }
+    
 
     /**
      * Remove the specified resource from storage.

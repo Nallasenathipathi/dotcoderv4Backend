@@ -87,25 +87,26 @@ class DepartmentController extends Controller
     public function update(Request $request, string $id)
     {
         $updateDept = Department::where('status', 1)->find($id);
-
+    
         if (!$updateDept) {
             return response()->json([
                 'message' => 'Department not found!',
                 'status' => 404
             ], 404);
         }
-
+    
         $updateDept->update([
-            'department_name' => $request->input('department_name'),
-            'department_short_name' => $request->input('department_short_name'),
+            'department_name' => $request->input('department_name', $updateDept->department_name),
+            'department_short_name' => $request->input('department_short_name', $updateDept->department_short_name),
             'updated_by' => 1,
         ]);
-
+    
         return response()->json([
             'message' => 'Department updated successfully!',
             'status' => 200
         ], 200);
     }
+    
 
 
     /**
