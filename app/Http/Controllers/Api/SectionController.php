@@ -43,6 +43,16 @@ class SectionController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
+        $hasData = Section::where('status', 1)->where('section_name', $request->input('section_name'))->exists();
+        if ($hasData) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => [
+                    'section_name' => ['The section name has already been taken.']
+                ]
+            ], 422);
+        }
+
         $createdSection = Section::create([
             'section_name' => $request->input('section_name'),
             'created_by' => null,

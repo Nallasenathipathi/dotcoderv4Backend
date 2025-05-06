@@ -31,7 +31,8 @@ class CollegeController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'college_name' => 'required|max:255',
-            'college_short_name' => 'required|max:50|unique:colleges,college_short_name',
+            // 'college_short_name' => 'required|max:50|unique:colleges,college_short_name',
+            'college_short_name' => 'required|max:50',
             'college_image' => 'required',
         ]);
 
@@ -39,6 +40,16 @@ class CollegeController extends Controller
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $hasData = College::where('status', 1)->where('college_short_name', $request->input('college_short_name'))->exists();
+        if ($hasData) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => [
+                    'college_short_name' => ['The college short name has already been taken.']
+                ]
             ], 422);
         }
 
@@ -92,7 +103,8 @@ class CollegeController extends Controller
 
         $validator = Validator::make($request->all(), [
             'college_name' => 'required|max:255',
-            'college_short_name' => 'required|max:50|unique:colleges,college_short_name',
+            // 'college_short_name' => 'required|max:50|unique:colleges,college_short_name',
+            'college_short_name' => 'required|max:50',
             'college_image' => 'required',
         ]);
 
@@ -103,6 +115,16 @@ class CollegeController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
+
+        // $hasData = College::where('status', 1)->where('college_short_name', $request->input('college_short_name'))->exists();
+        // if ($hasData) {
+        //     return response()->json([
+        //         'message' => 'Validation failed',
+        //         'errors' => [
+        //             'college_short_name' => ['The college short name has already been taken.']
+        //         ]
+        //     ], 422);
+        // }
 
         $updateCollege->update([
             'college_name' => $request->input('college_name', $updateCollege->college_name),

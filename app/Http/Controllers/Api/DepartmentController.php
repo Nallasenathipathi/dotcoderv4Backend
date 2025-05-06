@@ -35,13 +35,22 @@ class DepartmentController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'department_name' => 'required|max:255',
-            'department_short_name' => 'required|max:50|unique:departments,department_short_name',
+            'department_short_name' => 'required|max:50',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => $validator->errors()
+            ], 422);
+        }
+        $hasDepts = Department::where('status', 1)->where('department_short_name', $request->input('department_short_name'))->exists();
+        if ($hasDepts) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => [
+                    'department_short_name' => ['The department short name has already been taken.']
+                ]
             ], 422);
         }
         $createdDept = Department::create([
@@ -96,7 +105,7 @@ class DepartmentController extends Controller
         }
         $validator = Validator::make($request->all(), [
             'department_name' => 'required|max:255',
-            'department_short_name' => 'required|max:50|unique:departments,department_short_name',
+            'department_short_name' => 'required|max:50',
         ]);
 
         if ($validator->fails()) {
@@ -105,6 +114,16 @@ class DepartmentController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
+
+        // $hasDepts = Department::where('status', 1)->where('department_short_name', $request->input('department_short_name'))->exists();
+        // if ($hasDepts) {
+        //     return response()->json([
+        //         'message' => 'Validation failed',
+        //         'errors' => [
+        //             'department_short_name' => ['The department short name has already been taken.']
+        //         ]
+        //     ], 422);
+        // }
 
         $updateDept->update([
             'department_name' => $request->input('department_name', $updateDept->department_name),

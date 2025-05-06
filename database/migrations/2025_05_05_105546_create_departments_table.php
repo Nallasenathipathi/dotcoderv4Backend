@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('departments', function (Blueprint $table) {
             $table->id();
             $table->string('department_name')->nullable();
-            $table->string('department_short_name',50)->unique()->nullable();
+            $table->string('department_short_name',50)->nullable();
             $table->integer('status')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->json('updated_by')->nullable();

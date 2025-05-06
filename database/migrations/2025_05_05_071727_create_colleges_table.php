@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('colleges', function (Blueprint $table) {
             $table->id();
             $table->string('college_name')->nullable();
-            $table->string('college_short_name',50)->unique()->nullable();
+            $table->string('college_short_name',50)->nullable();
             $table->string('college_image')->nullable();
             $table->integer('status')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();

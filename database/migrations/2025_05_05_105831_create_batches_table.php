@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('batches', function (Blueprint $table) {
             $table->id();
-            $table->string('batch_name')->unique()->nullable();
+            $table->string('batch_name')->nullable();
             $table->integer('status')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->json('updated_by')->nullable();
