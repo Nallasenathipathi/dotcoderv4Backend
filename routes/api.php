@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\BatchController;
 use App\Http\Controllers\Api\CollegeController;
 use App\Http\Controllers\Api\CompanyTagController;
+use App\Http\Controllers\Api\CompilerController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\QuestionTagController;
 use App\Http\Controllers\Api\SectionController;
@@ -21,4 +22,5 @@ Route::apiResource('sections', SectionController::class);
 Route::apiResource('useracademics', UserAcademicController::class);
 Route::apiResource('questiontags', QuestionTagController::class);
 Route::apiResource('companytags', CompanyTagController::class);
+Route::apiResource('compilers', CompilerController::class);
 
