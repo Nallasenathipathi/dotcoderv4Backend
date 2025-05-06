@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 class DepartmentController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a lists of departments.
      */
     public function index()
     {
@@ -29,7 +29,7 @@ class DepartmentController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created department in storage.
      */
     public function store(Request $request)
     {
@@ -72,7 +72,7 @@ class DepartmentController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified department.
      */
     public function show(string $id)
     {
@@ -91,7 +91,7 @@ class DepartmentController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified department in storage.
      */
     public function update(Request $request, string $id)
     {
@@ -142,7 +142,7 @@ class DepartmentController extends Controller
 
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified department from storage.
      */
     public function destroy(string $id)
     {

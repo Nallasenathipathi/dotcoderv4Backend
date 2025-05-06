@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 class BatchController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a lists of batch.
      */
     public function index()
     {
@@ -29,7 +29,7 @@ class BatchController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created batch in storage.
      */
     public function store(Request $request)
     {
@@ -73,7 +73,7 @@ class BatchController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified batch.
      */
     public function show(string $id)
     {
@@ -92,7 +92,7 @@ class BatchController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified batch in storage.
      */
     public function update(Request $request, string $id)
     {
@@ -140,7 +140,7 @@ class BatchController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified batch from storage.
      */
     public function destroy(string $id)
     {

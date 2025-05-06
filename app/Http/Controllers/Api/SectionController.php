@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 class SectionController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a lists of section.
      */
     public function index()
     {
@@ -29,7 +29,7 @@ class SectionController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created section in storage.
      */
     public function store(Request $request)
     {
@@ -71,7 +71,7 @@ class SectionController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified section.
      */
     public function show(string $id)
     {
@@ -90,7 +90,7 @@ class SectionController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified section in storage.
      */
     public function update(Request $request, string $id)
     {
@@ -138,7 +138,7 @@ class SectionController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified section from storage.
      */
     public function destroy(string $id)
     {
