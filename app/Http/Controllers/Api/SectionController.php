@@ -114,6 +114,18 @@ class SectionController extends Controller
             ], 422);
         }
 
+        if ($updateSection->section_name !== $request->input('section_name')) {
+            $hasData = Section::where('status', 1)->where('section_name', $request->input('section_name'))->exists();
+            if ($hasData) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => [
+                        'section_name' => ['The section name has already been taken.']
+                    ]
+                ], 422);
+            }
+        }
+
         $updateSection->update([
             'section_name' => $request->input('section_name',$updateSection->section_name),
             'updated_by' => 1,

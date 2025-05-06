@@ -116,15 +116,17 @@ class CollegeController extends Controller
             ], 422);
         }
 
-        // $hasData = College::where('status', 1)->where('college_short_name', $request->input('college_short_name'))->exists();
-        // if ($hasData) {
-        //     return response()->json([
-        //         'message' => 'Validation failed',
-        //         'errors' => [
-        //             'college_short_name' => ['The college short name has already been taken.']
-        //         ]
-        //     ], 422);
-        // }
+        if ($updateCollege->college_short_name !== $request->input('college_short_name')) {
+            $hasData = College::where('status', 1)->where('college_short_name', $request->input('college_short_name'))->exists();
+            if ($hasData) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => [
+                        'college_short_name' => ['The college short name has already been taken.']
+                    ]
+                ], 422);
+            }
+        }
 
         $updateCollege->update([
             'college_name' => $request->input('college_name', $updateCollege->college_name),

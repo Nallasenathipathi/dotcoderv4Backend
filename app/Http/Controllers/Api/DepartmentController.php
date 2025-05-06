@@ -115,15 +115,17 @@ class DepartmentController extends Controller
             ], 422);
         }
 
-        // $hasDepts = Department::where('status', 1)->where('department_short_name', $request->input('department_short_name'))->exists();
-        // if ($hasDepts) {
-        //     return response()->json([
-        //         'message' => 'Validation failed',
-        //         'errors' => [
-        //             'department_short_name' => ['The department short name has already been taken.']
-        //         ]
-        //     ], 422);
-        // }
+        if ($updateDept->department_short_name !== $request->input('department_short_name')) {
+            $hasDepts = Department::where('status', 1)->where('department_short_name', $request->input('department_short_name'))->exists();
+            if ($hasDepts) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => [
+                        'department_short_name' => ['The department short name has already been taken.']
+                    ]
+                ], 422);
+            }
+        }
 
         $updateDept->update([
             'department_name' => $request->input('department_name', $updateDept->department_name),

@@ -44,6 +44,7 @@ class BatchController extends Controller
             ], 422);
         }
 
+
         $hasData = Batch::where('status', 1)->where('batch_name', $request->input('batch_name'))->exists();
         if ($hasData) {
             return response()->json([
@@ -113,6 +114,18 @@ class BatchController extends Controller
                 'message' => 'Validation failed',
                 'errors' => $validator->errors()
             ], 422);
+        }
+
+        if ($updateBatch->batch_name !== $request->input('batch_name')) {
+            $hasData = Batch::where('status', 1)->where('batch_name', $request->input('batch_name'))->exists();
+            if ($hasData) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => [
+                        'batch_name' => ['The batch name has already been taken.']
+                    ]
+                ], 422);
+            }
         }
 
         $updateBatch->update([
