@@ -94,17 +94,18 @@ class QuestionTagController extends Controller
             ], 404);
         }
     
-        $validator = Validator::make($request->all(), [
-            'tag_name' => 'required|string|max:255|unique:question_tags,tag_name,' . $id,
-        ]);
-    
-        if ($validator->fails()) {
+        $exists = QuestionTag::where('tag_name', $request->tag_name)
+            ->where('id', '!=', $id)
+            ->where('status', 1)
+            ->exists();
+
+        if ($exists) {
             return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'message' => 'This tag name already exists for an active tag.',
+                'status' => 422
             ], 422);
         }
-    
+        
         // Perform update
         $updateTag->update([
             'tag_name' => $request->input('tag_name'),
