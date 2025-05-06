@@ -14,7 +14,7 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        $department = Department::where('status', 1)->get()->toArray();
+        $department = Department::where('status', 1)->select('id', 'department_name', 'department_short_name', 'created_by', 'updated_by')->get()->toArray();
         if ($department == []) {
             return response()->json([
                 'message' => 'No Data found!',
@@ -67,7 +67,7 @@ class DepartmentController extends Controller
      */
     public function show(string $id)
     {
-        $dept = Department::where('status', 1)->where('id', $id)->first();
+        $dept = Department::where('status', 1)->where('id', $id)->select('id', 'department_name', 'department_short_name', 'created_by', 'updated_by')->first();
         if (!$dept) {
             return response()->json([
                 'message' => 'Data not found!',
@@ -86,27 +86,38 @@ class DepartmentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $updateDept = Department::where('status', 1)->find($id);
-    
+        $updateDept = Department::where('status', 1)->select('id', 'department_name', 'department_short_name', 'created_by', 'updated_by')->find($id);
+
         if (!$updateDept) {
             return response()->json([
                 'message' => 'Department not found!',
                 'status' => 404
             ], 404);
         }
-    
+        $validator = Validator::make($request->all(), [
+            'department_name' => 'required|max:255',
+            'department_short_name' => 'required|max:50|unique:departments,department_short_name',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         $updateDept->update([
             'department_name' => $request->input('department_name', $updateDept->department_name),
             'department_short_name' => $request->input('department_short_name', $updateDept->department_short_name),
             'updated_by' => 1,
         ]);
-    
+
         return response()->json([
             'message' => 'Department updated successfully!',
             'status' => 200
         ], 200);
     }
-    
+
 
 
     /**

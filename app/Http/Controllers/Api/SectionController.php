@@ -14,7 +14,7 @@ class SectionController extends Controller
      */
     public function index()
     {
-        $section = Section::where('status', 1)->get()->toArray();
+        $section = Section::where('status', 1)->select('id', 'section_name', 'created_by', 'updated_by')->get()->toArray();
         if ($section == []) {
             return response()->json([
                 'message' => 'No Data found!',
@@ -65,7 +65,7 @@ class SectionController extends Controller
      */
     public function show(string $id)
     {
-        $section = Section::where('status', 1)->where('id', $id)->first();
+        $section = Section::where('status', 1)->where('id', $id)->select('id', 'section_name', 'created_by', 'updated_by')->first();
         if (!$section) {
             return response()->json([
                 'message' => 'Data not found!',
@@ -84,7 +84,7 @@ class SectionController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $updateSection = Section::where('status', 1)->where('id', $id)->first();
+        $updateSection = Section::where('status', 1)->where('id', $id)->select('id', 'section_name', 'created_by', 'updated_by')->first();
 
         if (!$updateSection) {
             return response()->json([
@@ -93,8 +93,19 @@ class SectionController extends Controller
             ], 404);
         }
 
+        $validator = Validator::make($request->all(), [
+            'section_name' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         $updateSection->update([
-            'section_name' => $request->input('section_name'),
+            'section_name' => $request->input('section_name',$updateSection->section_name),
             'updated_by' => 1,
         ]);
 

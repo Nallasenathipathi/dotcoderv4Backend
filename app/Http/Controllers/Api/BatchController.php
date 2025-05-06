@@ -14,7 +14,7 @@ class BatchController extends Controller
      */
     public function index()
     {
-        $batch = Batch::where('status', 1)->get()->toArray();
+        $batch = Batch::where('status', 1)->select('id', 'batch_name', 'created_by', 'updated_by')->get()->toArray();
         if ($batch == []) {
             return response()->json([
                 'message' => 'No Data found!',
@@ -65,7 +65,7 @@ class BatchController extends Controller
      */
     public function show(string $id)
     {
-        $batch = Batch::where('status', 1)->where('id', $id)->first();
+        $batch = Batch::where('status', 1)->where('id', $id)->select('id', 'batch_name', 'created_by', 'updated_by')->first();
         if (!$batch) {
             return response()->json([
                 'message' => 'Data not found!',
@@ -84,7 +84,7 @@ class BatchController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $updateBatch = Batch::where('status', 1)->where('id', $id)->first();
+        $updateBatch = Batch::where('status', 1)->where('id', $id)->select('id', 'batch_name', 'created_by', 'updated_by')->first();
 
         if (!$updateBatch) {
             return response()->json([
@@ -93,8 +93,19 @@ class BatchController extends Controller
             ], 404);
         }
 
+        $validator = Validator::make($request->all(), [
+            'batch_name' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         $updateBatch->update([
-            'batch_name' => $request->input('batch_name'),
+            'batch_name' => $request->input('batch_name', $updateBatch->batch_name),
             'updated_by' => 1,
         ]);
 
