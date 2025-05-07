@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Languages;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class LanguageController extends Controller
 {
     //
     public function index()
     {
-        $Languages = Languages::where('status', 1)->get()->toArray();
+        $Languages = Languages::where('status', 1)->select('lang_name', 'lang_id', 'lang_image', 'lang_category', 'status', 'created_by', 'updated_by')->get()->toArray();
         if ($Languages == []) {
             return response()->json([
                 'message' => 'No Data found!',
@@ -33,7 +34,12 @@ class LanguageController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'lang_name' => 'required|string|max:255',
-            'lang_id' => 'required|unique:languages,lang_id,',
+            'lang_id' => [
+                'required',
+                Rule::unique('languages', 'lang_id')->where(function ($query) {
+                    return $query->where('status', 1);
+                }),
+            ],
             'lang_image' => 'required',
             'lang_category' => 'required',
         ]);
@@ -71,13 +77,14 @@ class LanguageController extends Controller
      */
     public function show(string $id)
     {
-        $Lanugage = Languages::where('status', 1)->where('id', $id)->first();
+        $Lanugage = Languages::where('status', 1)->select('id')->where('id', $id)->first();
         if (!$Lanugage) {
             return response()->json([
                 'message' => 'Lanugage not found!',
                 'status' => 404
             ], 404);
         }
+        $Lanugage = json_decode(json_encode($Lanugage), true);
         return response()->json([
             'message' => 'Language fetched successfully!',
             'data' => $Lanugage,
@@ -90,22 +97,20 @@ class LanguageController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $updateLanguage = Languages::where('status', 1)->where('id', $id)->first();
-
-        if (!$updateLanguage) {
-            return response()->json([
-                'message' => 'Language not found!',
-                'status' => 404
-            ], 404);
-        }
-
         $validator = Validator::make($request->all(), [
             'lang_name' => 'required|string|max:255',
-            'lang_id' => 'required',
+            'lang_id' => [
+                'required',
+                Rule::unique('languages', 'lang_id')
+                    ->ignore($id)
+                    ->where(function ($query) {
+                        return $query->where('status', 1);
+                    }),
+            ],
             'lang_image' => 'required|string|max:255',
             'lang_category' => 'required',
         ]);
-        
+
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation failed',
@@ -113,16 +118,13 @@ class LanguageController extends Controller
             ], 422);
         }
 
-        $exists = Languages::where('lang_id', $request->lang_id)
-            ->where('id', '!=', $id)
-            ->where('status', 1)
-            ->exists();
+        $updateLanguage = Languages::where('status', 1)->select('id')->where('id', $id)->first();
 
-        if ($exists) {
+        if (!$updateLanguage) {
             return response()->json([
-                'message' => 'This Language id already exists for an active Langauge.',
-                'status' => 422
-            ], 422);
+                'message' => 'Language not found!',
+                'status' => 404
+            ], 404);
         }
 
         $updateLanguage->update([
@@ -144,7 +146,7 @@ class LanguageController extends Controller
      */
     public function destroy(string $id)
     {
-        $LanguageDelete = Languages::where('id', $id)->where('status', 1)->first();
+        $LanguageDelete = Languages::where('id', $id)->select('id', 'status')->where('status', 1)->first();
 
         if (!$LanguageDelete) {
             return response()->json([
@@ -161,5 +163,4 @@ class LanguageController extends Controller
             'status' => 200
         ]);
     }
-
 }
