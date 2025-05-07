@@ -12,7 +12,7 @@ class CompilerController extends Controller
     //
     public function index()
     {
-        $compilers = Compilers::where('status', 1)->get()->toArray();
+        $compilers = Compilers::where('status', 1)->select('api', 'count', 'status', 'created_by', 'updated_by')->get()->toArray();
         if ($compilers == []) {
             return response()->json([
                 'message' => 'No Data found!',
@@ -73,6 +73,7 @@ class CompilerController extends Controller
                 'status' => 404
             ], 404);
         }
+        $Compiler = json_decode(json_encode($Compiler), true);
         return response()->json([
             'message' => 'Compiler fetched successfully!',
             'data' => $Compiler,
@@ -85,15 +86,6 @@ class CompilerController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $updateCompiler = Compilers::where('status', 1)->where('id', $id)->first();
-    
-        if (!$updateCompiler) {
-            return response()->json([
-                'message' => 'Compiler not found!',
-                'status' => 404
-            ], 404);
-        }
-    
         $validator = Validator::make($request->all(), [
             'api' => 'required|string|max:255' . $id,
         ]);
@@ -103,6 +95,15 @@ class CompilerController extends Controller
                 'message' => 'Validation failed',
                 'errors' => $validator->errors()
             ], 422);
+        }
+
+        $updateCompiler = Compilers::where('status', 1)->select('id')->where('id', $id)->first();
+    
+        if (!$updateCompiler) {
+            return response()->json([
+                'message' => 'Compiler not found!',
+                'status' => 404
+            ], 404);
         }
     
         // Perform update
@@ -124,7 +125,7 @@ class CompilerController extends Controller
      */
     public function destroy(string $id)
     {
-        $CompilerDelete = Compilers::where('id', $id)->where('status', 1)->first();
+        $CompilerDelete = Compilers::where('id', $id)->select('id', 'status')->where('status', 1)->first();
 
         if (!$CompilerDelete) {
             return response()->json([
