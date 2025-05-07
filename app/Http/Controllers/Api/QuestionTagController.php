@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\QuestionTag;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class QuestionTagController extends Controller
 {
@@ -13,7 +14,7 @@ class QuestionTagController extends Controller
 
     public function index()
     {
-        $tags = QuestionTag::where('status', 1)->get()->toArray();
+        $tags = QuestionTag::where('status', 1)->select('id', 'tag_name', 'status', 'created_by', 'updated_by')->get()->toArray();
         if ($tags == []) {
             return response()->json([
                 'message' => 'No Data found!',
@@ -33,7 +34,15 @@ class QuestionTagController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'tag_name' => 'required|string|max:255|unique:question_tags,tag_name',
+            'tag_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('question_tags', 'tag_name')
+                    ->where(function ($query) {
+                        return $query->where('status', 1);
+                    }),
+            ],
         ]);
 
         if ($validator->fails()) {
@@ -66,13 +75,14 @@ class QuestionTagController extends Controller
      */
     public function show(string $id)
     {
-        $tag = QuestionTag::where('status', 1)->where('id', $id)->first();
+        $tag = QuestionTag::where('status', 1)->select('id')->where('id', $id)->first();
         if (!$tag) {
             return response()->json([
                 'message' => 'Tag not found!',
                 'status' => 404
             ], 404);
         }
+        $tag = json_decode(json_encode($tag), true);
         return response()->json([
             'message' => 'Tag fetched successfully!',
             'data' => $tag,
@@ -85,17 +95,18 @@ class QuestionTagController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $updateTag = QuestionTag::where('status', 1)->where('id', $id)->first();
-
-        if (!$updateTag) {
-            return response()->json([
-                'message' => 'Tag not found!',
-                'status' => 404
-            ], 404);
-        }
 
         $validator = Validator::make($request->all(), [
-            'tag_name' => 'required|string|max:255' . $id,
+            'tag_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('question_tags', 'tag_name')
+                    ->ignore($id)
+                    ->where(function ($query) {
+                        return $query->where('status', 1);
+                    }),
+            ],
         ]);
 
         if ($validator->fails()) {
@@ -105,16 +116,13 @@ class QuestionTagController extends Controller
             ], 422);
         }
 
-        $exists = QuestionTag::where('tag_name', $request->tag_name)
-            ->where('id', '!=', $id)
-            ->where('status', 1)
-            ->exists();
+        $updateTag = QuestionTag::where('status', 1)->select('id')->where('id', $id)->first();
 
-        if ($exists) {
+        if (!$updateTag) {
             return response()->json([
-                'message' => 'This tag name already exists for an active tag.',
-                'status' => 422
-            ], 422);
+                'message' => 'Tag not found!',
+                'status' => 404
+            ], 404);
         }
 
         $updateTag->update([
@@ -133,7 +141,7 @@ class QuestionTagController extends Controller
      */
     public function destroy(string $id)
     {
-        $tagDelete = QuestionTag::where('id', $id)->where('status', 1)->first();
+        $tagDelete = QuestionTag::where('id', $id)->select('id', 'status')->where('status', 1)->first();
 
         if (!$tagDelete) {
             return response()->json([
