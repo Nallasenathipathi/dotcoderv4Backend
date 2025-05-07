@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class DepartmentController extends Controller
 {
@@ -35,7 +36,13 @@ class DepartmentController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'department_name' => 'required|max:255',
-            'department_short_name' => 'required|max:50',
+            'department_short_name' => [
+                'required',
+                Rule::unique('departments', 'department_short_name') 
+                    ->where(function ($query) {
+                        return $query->where('status', 1); 
+                    }),
+            ],
         ]);
 
         if ($validator->fails()) {
@@ -44,15 +51,7 @@ class DepartmentController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-        $hasDepts = Department::where('status', 1)->where('department_short_name', $request->input('department_short_name'))->exists();
-        if ($hasDepts) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => [
-                    'department_short_name' => ['The department short name has already been taken.']
-                ]
-            ], 422);
-        }
+        
         $createdDept = Department::create([
             'department_name' => $request->input('department_name'),
             'department_short_name' => $request->input('department_short_name'),
@@ -83,6 +82,7 @@ class DepartmentController extends Controller
                 'status' => 404
             ], 404);
         }
+        $dept = json_decode(json_encode($dept), true);
         return response()->json([
             'message' => 'Department data fetched successfully!',
             'data' => $dept,
@@ -95,7 +95,7 @@ class DepartmentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $updateDept = Department::where('status', 1)->select('id', 'department_name', 'department_short_name', 'created_by', 'updated_by')->find($id);
+        $updateDept = Department::where('status', 1)->select('id', 'department_name', 'department_short_name', 'created_by', 'updated_by')->first($id);
 
         if (!$updateDept) {
             return response()->json([
@@ -105,7 +105,15 @@ class DepartmentController extends Controller
         }
         $validator = Validator::make($request->all(), [
             'department_name' => 'required|max:255',
-            'department_short_name' => 'required|max:50',
+            'department_short_name' => [
+                'required',
+                'max:50',
+                Rule::unique('departments', 'department_short_name')
+                    ->ignore($id) 
+                    ->where(function ($query) {
+                        return $query->where('status', 1); 
+                    }),
+            ],
         ]);
 
         if ($validator->fails()) {
@@ -115,21 +123,9 @@ class DepartmentController extends Controller
             ], 422);
         }
 
-        if ($updateDept->department_short_name !== $request->input('department_short_name')) {
-            $hasDepts = Department::where('status', 1)->where('department_short_name', $request->input('department_short_name'))->exists();
-            if ($hasDepts) {
-                return response()->json([
-                    'message' => 'Validation failed',
-                    'errors' => [
-                        'department_short_name' => ['The department short name has already been taken.']
-                    ]
-                ], 422);
-            }
-        }
-
         $updateDept->update([
-            'department_name' => $request->input('department_name', $updateDept->department_name),
-            'department_short_name' => $request->input('department_short_name', $updateDept->department_short_name),
+            'department_name' => $request->input('department_name'),
+            'department_short_name' => $request->input('department_short_name'),
             'updated_by' => 1,
         ]);
 

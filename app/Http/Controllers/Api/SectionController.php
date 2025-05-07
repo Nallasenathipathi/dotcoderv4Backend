@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Section;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class SectionController extends Controller
 {
@@ -34,22 +35,19 @@ class SectionController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'section_name' => 'required',
+            'section_name' => [
+                'required',
+                Rule::unique('sections', 'section_name')
+                    ->where(function ($query) {
+                        return $query->where('status', 1);
+                    }),
+            ],
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => $validator->errors()
-            ], 422);
-        }
-        $hasData = Section::where('status', 1)->where('section_name', $request->input('section_name'))->exists();
-        if ($hasData) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => [
-                    'section_name' => ['The section name has already been taken.']
-                ]
             ], 422);
         }
 
@@ -82,6 +80,7 @@ class SectionController extends Controller
                 'status' => 404
             ], 404);
         }
+        $section = json_decode(json_encode($section), true);
         return response()->json([
             'message' => 'Section data fetched successfully!',
             'data' => $section,
@@ -104,7 +103,14 @@ class SectionController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'section_name' => 'required',
+            'section_name' => [
+                'required',
+                Rule::unique('sections', 'section_name')
+                    ->ignore($id)
+                    ->where(function ($query) {
+                        return $query->where('status', 1);
+                    }),
+            ],
         ]);
 
         if ($validator->fails()) {
@@ -114,20 +120,8 @@ class SectionController extends Controller
             ], 422);
         }
 
-        if ($updateSection->section_name !== $request->input('section_name')) {
-            $hasData = Section::where('status', 1)->where('section_name', $request->input('section_name'))->exists();
-            if ($hasData) {
-                return response()->json([
-                    'message' => 'Validation failed',
-                    'errors' => [
-                        'section_name' => ['The section name has already been taken.']
-                    ]
-                ], 422);
-            }
-        }
-
         $updateSection->update([
-            'section_name' => $request->input('section_name',$updateSection->section_name),
+            'section_name' => $request->input('section_name'),
             'updated_by' => 1,
         ]);
 
