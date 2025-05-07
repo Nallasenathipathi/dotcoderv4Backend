@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\College;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class CollegeController extends Controller
 {
@@ -31,8 +32,13 @@ class CollegeController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'college_name' => 'required|max:255',
-            // 'college_short_name' => 'required|max:50|unique:colleges,college_short_name',
-            'college_short_name' => 'required|max:50',
+            'college_short_name' => [
+                'required',
+                'max:50',
+                Rule::unique('colleges','college_short_name')->where(function ($query) {
+                    return $query->where('status', 1);
+                }),
+            ],
             'college_image' => 'required',
         ]);
 
@@ -40,16 +46,6 @@ class CollegeController extends Controller
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $hasData = College::where('status', 1)->where('college_short_name', $request->input('college_short_name'))->exists();
-        if ($hasData) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => [
-                    'college_short_name' => ['The college short name has already been taken.']
-                ]
             ], 422);
         }
 
@@ -76,12 +72,14 @@ class CollegeController extends Controller
     public function show(string $id)
     {
         $college = College::where('status', 1)->select('id', 'college_name', 'college_short_name', 'college_image', 'created_by', 'updated_by')->where('id', $id)->first();
+
         if (!$college) {
             return response()->json([
                 'message' => 'Data not found!',
                 'status' => 404
             ], 404);
         }
+        $college = json_decode(json_encode($college), true);
         return response()->json([
             'message' => 'College data fetched successfully!',
             'data' => $college,
@@ -92,19 +90,18 @@ class CollegeController extends Controller
     // To update the college
     public function update(Request $request, string $id)
     {
-        $updateCollege = College::where('status', 1)->select('id', 'college_name', 'college_short_name', 'college_image', 'created_by', 'updated_by')->where('id', $id)->first();
-
-        if (!$updateCollege) {
-            return response()->json([
-                'message' => 'College not found!',
-                'status' => 404
-            ], 404);
-        }
 
         $validator = Validator::make($request->all(), [
             'college_name' => 'required|max:255',
-            // 'college_short_name' => 'required|max:50|unique:colleges,college_short_name',
-            'college_short_name' => 'required|max:50',
+            'college_short_name' => [
+                'required',
+                'max:50',
+                Rule::unique('colleges','college_short_name') 
+                    ->ignore($id)
+                    ->where(function ($query) {
+                        return $query->where('status', 1);
+                    }),
+            ],
             'college_image' => 'required',
         ]);
 
@@ -116,22 +113,19 @@ class CollegeController extends Controller
             ], 422);
         }
 
-        if ($updateCollege->college_short_name !== $request->input('college_short_name')) {
-            $hasData = College::where('status', 1)->where('college_short_name', $request->input('college_short_name'))->exists();
-            if ($hasData) {
-                return response()->json([
-                    'message' => 'Validation failed',
-                    'errors' => [
-                        'college_short_name' => ['The college short name has already been taken.']
-                    ]
-                ], 422);
-            }
+        $updateCollege = College::where('status', 1)->select('id')->where('id', $id)->first();
+
+        if (!$updateCollege) {
+            return response()->json([
+                'message' => 'College not found!',
+                'status' => 404
+            ], 404);
         }
 
         $updateCollege->update([
-            'college_name' => $request->input('college_name', $updateCollege->college_name),
-            'college_short_name' => $request->input('college_short_name', $updateCollege->college_short_name),
-            'college_image' => $request->input('college_image', $updateCollege->college_image),
+            'college_name' => $request->input('college_name'),
+            'college_short_name' => $request->input('college_short_name'),
+            'college_image' => $request->input('college_image'),
             'updated_by' => 1,
         ]);
 
