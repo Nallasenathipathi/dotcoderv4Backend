@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('roll_no', 150)->nullable();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->rememberToken();
             $table->string('dob')->nullable();
             $table->integer('gender')->nullable();
             $table->integer('role')->nullable();
@@ -27,7 +29,6 @@ return new class extends Migration
             $table->string('updated_by')->nullable();
             $table->dateTime('password_validate_at')->nullable();
             $table->json('access')->nullable();
-            $table->rememberToken();
             $table->timestamps();
         });
 
