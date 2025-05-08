@@ -14,13 +14,7 @@ class UserAcademicController extends Controller
     public function index()
     {
         $AcademicData = UserAcademics::where('status', 1)->get()->toArray();
-        if ($AcademicData == []) {
-            return response()->json([
-                'message' => 'No Data found!',
-                'data' => [],
-                'status' => 200
-            ], 404);
-        }
+        
         return response()->json([
             'message' => 'Academics data fetched successfully!',
             'data' => $AcademicData,

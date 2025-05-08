@@ -16,13 +16,7 @@ class QuestionTagController extends Controller
     public function index()
     {
         $tags = QuestionTag::where('status', 1)->select('id', 'tag_name', 'status', 'created_by', 'updated_by')->get()->toArray();
-        if ($tags == []) {
-            return response()->json([
-                'message' => 'No Data found!',
-                'status' => 200,
-                'data' => []
-            ], 200);
-        }
+        
         return response()->json([
             'message' => 'Tags fetched successfully!',
             'data' => $tags,

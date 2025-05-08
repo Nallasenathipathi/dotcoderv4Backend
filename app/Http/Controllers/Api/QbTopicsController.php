@@ -16,13 +16,7 @@ class QbTopicsController extends Controller
     public function index()
     {
         $topics = QbTopics::where('status', 1)->select('id', 'course_id', 'topic_tag_id', 'topic_name', 'created_by', 'updated_by')->get()->toArray();
-        if ($topics == []) {
-            return response()->json([
-                'message' => 'No Data found!',
-                'status' => 200,
-                'data' => []
-            ], 200);
-        }
+        
         return response()->json([
             'message' => 'fetched successfully!',
             'data' => $topics,

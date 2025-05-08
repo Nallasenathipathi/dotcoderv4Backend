@@ -15,18 +15,12 @@ class CollegeController extends Controller
     public function index()
     {
         $colleges = College::where('status', 1)->select('id', 'college_name', 'college_short_name', 'college_image', 'created_by', 'updated_by')->get()->toArray();
-        if ($colleges == []) {
-            return response()->json([
-                'message' => 'No Data found!',
-                'data' => [],
-                'status' => 404
-            ], 200);
-        }
+
         return response()->json([
             'message' => 'fetched successfully!',
             'data' => $colleges,
             'status' => 200
-        ]);
+        ], 200);
     }
 
     // To store College

@@ -16,13 +16,6 @@ class CompanyTagController extends Controller
     {
         $companyTags = CompanyTag::where('status', 1)->select('id', 'tag_name', 'status', 'created_by', 'updated_by')->get()->toArray();
 
-        if ($companyTags == []) {
-            return response()->json([
-                'message' => 'No Data found!',
-                'status' => 200,
-                'data' => []
-            ], 200);
-        }
         return response()->json([
             'message' => 'tags fetched successfully!',
             'data' => $companyTags,

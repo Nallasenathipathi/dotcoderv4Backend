@@ -15,13 +15,6 @@ class LanguageController extends Controller
     public function index()
     {
         $Languages = Languages::where('status', 1)->select('lang_name', 'lang_id', 'lang_image', 'lang_category', 'status', 'created_by', 'updated_by')->get()->toArray();
-        if ($Languages == []) {
-            return response()->json([
-                'message' => 'No Data found!',
-                'status' => 200,
-                'data' => [],
-            ], 200);
-        }
         return response()->json([
             'message' => 'Languages fetched successfully!',
             'data' => $Languages,

@@ -16,13 +16,7 @@ class QbCourseController extends Controller
     public function index()
     {
         $courses = QbCourse::where('status', 1)->select('id', 'course_name', 'created_by', 'updated_by')->get()->toArray();
-        if ($courses == []) {
-            return response()->json([
-                'message' => 'No Data found!',
-                'status' => 200,
-                'data' => []
-            ], 200);
-        }
+       
         return response()->json([
             'message' => 'fetched successfully!',
             'data' => $courses,

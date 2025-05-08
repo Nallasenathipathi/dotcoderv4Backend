@@ -17,13 +17,7 @@ class BatchController extends Controller
     public function index()
     {
         $batch = Batch::where('status', 1)->select('id', 'batch_name', 'created_by', 'updated_by')->get()->toArray();
-        if ($batch == []) {
-            return response()->json([
-                'message' => 'No Data found!',
-                'status' => 200,
-                'data' => []
-            ], 200);
-        }
+        
         return response()->json([
             'message' => 'Batch data fetched successfully!',
             'data' => $batch,

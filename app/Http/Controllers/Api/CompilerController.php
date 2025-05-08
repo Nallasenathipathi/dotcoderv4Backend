@@ -14,13 +14,7 @@ class CompilerController extends Controller
     public function index()
     {
         $compilers = Compilers::where('status', 1)->select('api', 'count', 'status', 'created_by', 'updated_by')->get()->toArray();
-        if ($compilers == []) {
-            return response()->json([
-                'message' => 'No Data found!',
-                'data' => [],
-                'status' => 200
-            ], 200);
-        }
+        
         return response()->json([
             'message' => 'compilers fetched successfully!',
             'data' => $compilers,

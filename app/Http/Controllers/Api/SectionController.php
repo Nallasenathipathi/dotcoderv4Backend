@@ -17,13 +17,7 @@ class SectionController extends Controller
     public function index()
     {
         $section = Section::where('status', 1)->select('id', 'section_name', 'created_by', 'updated_by')->get()->toArray();
-        if ($section == []) {
-            return response()->json([
-                'message' => 'No Data found!',
-                'status' => 200,
-                'data' => []
-            ], 200);
-        }
+        
         return response()->json([
             'message' => 'Section data fetched successfully!',
             'data' => $section,

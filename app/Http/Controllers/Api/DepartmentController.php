@@ -17,13 +17,7 @@ class DepartmentController extends Controller
     public function index()
     {
         $department = Department::where('status', 1)->select('id', 'department_name', 'department_short_name', 'created_by', 'updated_by')->get()->toArray();
-        if ($department == []) {
-            return response()->json([
-                'message' => 'No Data found!',
-                'data' => [],
-                'status' => 200
-            ], 200);
-        }
+       
         return response()->json([
             'message' => 'Department data fetched successfully!',
             'data' => $department,
