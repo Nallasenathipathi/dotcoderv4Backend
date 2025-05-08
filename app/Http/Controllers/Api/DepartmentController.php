@@ -20,8 +20,9 @@ class DepartmentController extends Controller
         if ($department == []) {
             return response()->json([
                 'message' => 'No Data found!',
-                'status' => 404
-            ], 404);
+                'data' => [],
+                'status' => 200
+            ], 200);
         }
         return response()->json([
             'message' => 'Department data fetched successfully!',
@@ -39,9 +40,9 @@ class DepartmentController extends Controller
             'department_name' => 'required|max:255',
             'department_short_name' => [
                 'required',
-                Rule::unique('departments', 'department_short_name') 
+                Rule::unique('departments', 'department_short_name')
                     ->where(function ($query) {
-                        return $query->where('status', 1); 
+                        return $query->where('status', 1);
                     }),
             ],
         ]);
@@ -52,7 +53,7 @@ class DepartmentController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-        
+
         $createdDept = Department::create([
             'department_name' => $request->input('department_name'),
             'department_short_name' => $request->input('department_short_name'),
@@ -102,9 +103,9 @@ class DepartmentController extends Controller
                 'required',
                 'max:50',
                 Rule::unique('departments', 'department_short_name')
-                    ->ignore($id) 
+                    ->ignore($id)
                     ->where(function ($query) {
-                        return $query->where('status', 1); 
+                        return $query->where('status', 1);
                     }),
             ],
         ]);

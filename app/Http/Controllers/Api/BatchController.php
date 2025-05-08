@@ -20,8 +20,9 @@ class BatchController extends Controller
         if ($batch == []) {
             return response()->json([
                 'message' => 'No Data found!',
-                'status' => 404
-            ], 404);
+                'status' => 200,
+                'data' => []
+            ], 200);
         }
         return response()->json([
             'message' => 'Batch data fetched successfully!',

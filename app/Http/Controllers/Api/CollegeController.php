@@ -18,8 +18,9 @@ class CollegeController extends Controller
         if ($colleges == []) {
             return response()->json([
                 'message' => 'No Data found!',
+                'data' => [],
                 'status' => 404
-            ], 404);
+            ], 200);
         }
         return response()->json([
             'message' => 'fetched successfully!',

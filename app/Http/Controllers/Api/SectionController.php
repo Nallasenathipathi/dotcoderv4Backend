@@ -20,8 +20,9 @@ class SectionController extends Controller
         if ($section == []) {
             return response()->json([
                 'message' => 'No Data found!',
-                'status' => 404
-            ], 404);
+                'status' => 200,
+                'data' => []
+            ], 200);
         }
         return response()->json([
             'message' => 'Section data fetched successfully!',
