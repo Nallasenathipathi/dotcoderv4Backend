@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Compilers;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class CompilerController extends Controller
@@ -16,8 +17,9 @@ class CompilerController extends Controller
         if ($compilers == []) {
             return response()->json([
                 'message' => 'No Data found!',
-                'status' => 404
-            ], 404);
+                'data' => [],
+                'status' => 200
+            ], 200);
         }
         return response()->json([
             'message' => 'compilers fetched successfully!',
@@ -46,7 +48,7 @@ class CompilerController extends Controller
         $createdCompiler = Compilers::create([
             'api' => $request->input('api'),
             'count' => 0,
-            'created_by' => null,
+            'created_by' => Auth::id() ?? null,
             'status' => 1
         ]);
         if (!$createdCompiler) {
@@ -104,6 +106,20 @@ class CompilerController extends Controller
                 'message' => 'Compiler not found!',
                 'status' => 404
             ], 404);
+        }
+
+        $authId = Auth::id();
+        if ($updateCompiler['updated_by'] != null) {
+            $updated_by_data = json_decode($updateCompiler['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
         }
     
         // Perform update

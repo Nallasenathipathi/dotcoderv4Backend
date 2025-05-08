@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\UserAcademics;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class UserAcademicController extends Controller
@@ -16,7 +17,8 @@ class UserAcademicController extends Controller
         if ($AcademicData == []) {
             return response()->json([
                 'message' => 'No Data found!',
-                'status' => 404
+                'data' => [],
+                'status' => 200
             ],404);
         }
         return response()->json([
@@ -57,7 +59,7 @@ class UserAcademicController extends Controller
             'section_id' => $request->input('section_id'),
             'academic_marks' => $request->input('academic_marks'),
             'backlogs' => $request->input('backlogs'),
-            'created_by' => null,
+            'created_by' => Auth::id() ?? null,
             'status' => 1
         ]);
         if (!$createdAcademicData) {
@@ -105,6 +107,20 @@ class UserAcademicController extends Controller
             ], 404);
         }
 
+        $authId = Auth::id();
+        if ($updateAcademicData['updated_by'] != null) {
+            $updated_by_data = json_decode($updateAcademicData['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
+
         $updateAcademicData->update([
             'user_id' => $request->input('user_id'),
             'college_id' => $request->input('college_id'),
@@ -113,7 +129,7 @@ class UserAcademicController extends Controller
             'section_id' => $request->input('section_id'),
             'academic_marks' => $request->input('academic_marks'),
             'backlogs' => $request->input('backlogs'),
-            'updated_by' => 1,
+            'updated_by' => $updated_by_data ?? null,
         ]);
         $updateAcademicData->save();
 

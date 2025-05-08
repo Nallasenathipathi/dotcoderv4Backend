@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\QbCourse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class QbCourseController extends Controller
@@ -18,8 +19,9 @@ class QbCourseController extends Controller
         if ($courses == []) {
             return response()->json([
                 'message' => 'No Data found!',
-                'status' => 404
-            ], 404);
+                'status' => 200,
+                'data' => []
+            ], 200);
         }
         return response()->json([
             'message' => 'fetched successfully!',
@@ -46,7 +48,7 @@ class QbCourseController extends Controller
 
         $createdCourse = QbCourse::create([
             'course_name' => $request->input('course_name'),
-            'created_by' => auth()->id ?? null,
+            'created_by' => Auth::id() ?? null,
             'status' => 1
         ]);
         if (!$createdCourse) {
@@ -71,8 +73,9 @@ class QbCourseController extends Controller
         if (!$course) {
             return response()->json([
                 'message' => 'Data not found!',
-                'status' => 404
-            ], 404);
+                'status' => 200,
+                'data' => [],
+            ], 200);
         }
         $course = json_decode(json_encode($course), true);
         return response()->json([
@@ -99,7 +102,7 @@ class QbCourseController extends Controller
             ], 422);
         }
 
-        $updateCourse = QbCourse::where('status', 1)->select('id')->where('id', $id)->first();
+        $updateCourse = QbCourse::where('status', 1)->select('id','updated_by')->where('id', $id)->first();
 
         if (!$updateCourse) {
             return response()->json([
@@ -108,9 +111,23 @@ class QbCourseController extends Controller
             ], 404);
         }
 
+        $authId = Auth::id();
+        if ($updateCourse['updated_by'] != null) {
+            $updated_by_data = json_decode($updateCourse['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
+
         $updateCourse->update([
             'course_name' => $request->input('course_name'),
-            'updated_by' => 1,
+            'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([

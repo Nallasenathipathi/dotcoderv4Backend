@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\QbTopics;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class QbTopicsController extends Controller
@@ -18,8 +19,9 @@ class QbTopicsController extends Controller
         if ($topics == []) {
             return response()->json([
                 'message' => 'No Data found!',
-                'status' => 404
-            ], 404);
+                'status' => 200,
+                'data' => []
+            ], 200);
         }
         return response()->json([
             'message' => 'fetched successfully!',
@@ -50,7 +52,7 @@ class QbTopicsController extends Controller
             'course_id' => $request->input('course_id'),
             'topic_tag_id' => $request->input('topic_tag_id'),
             'topic_name' => $request->input('topic_name'),
-            'created_by' => auth()->id ?? null,
+            'created_by' => Auth::id() ?? null,
             'status' => 1
         ]);
         if (!$createdCourse) {
@@ -105,7 +107,20 @@ class QbTopicsController extends Controller
             ], 422);
         }
 
-        $updateTopics = QbTopics::where('status', 1)->select('id')->where('id', $id)->first();
+        $updateTopics = QbTopics::where('status', 1)->select('id','updated_by')->where('id', $id)->first();
+        $authId = Auth::id();
+        if ($updateTopics['updated_by'] != null) {
+            $updated_by_data = json_decode($updateTopics['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
 
         if (!$updateTopics) {
             return response()->json([
@@ -118,7 +133,7 @@ class QbTopicsController extends Controller
             'course_id' => $request->input('course_name'),
             'topic_tag_id' => $request->input('topic_tag_id'),
             'topic_name' => $request->input('topic_name'),
-            'updated_by' => 1,
+            'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Languages;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -17,8 +18,8 @@ class LanguageController extends Controller
         if ($Languages == []) {
             return response()->json([
                 'message' => 'No Data found!',
-                'status' => 404
-            ], 404);
+                'status' => 200
+            ], 200);
         }
         return response()->json([
             'message' => 'Languages fetched successfully!',
@@ -56,7 +57,7 @@ class LanguageController extends Controller
             'lang_id' => $request->input('lang_id'),
             'lang_image' => $request->input('lang_image'),
             'lang_category' => $request->input('lang_category'),
-            'created_by' => null,
+            'created_by' => Auth::id() ?? null,
             'status' => 1
         ]);
 
@@ -118,7 +119,7 @@ class LanguageController extends Controller
             ], 422);
         }
 
-        $updateLanguage = Languages::where('status', 1)->select('id')->where('id', $id)->first();
+        $updateLanguage = Languages::where('status', 1)->select('id','updated_by')->where('id', $id)->first();
 
         if (!$updateLanguage) {
             return response()->json([
@@ -126,13 +127,26 @@ class LanguageController extends Controller
                 'status' => 404
             ], 404);
         }
+        $authId = Auth::id();
+        if ($updateLanguage['updated_by'] != null) {
+            $updated_by_data = json_decode($updateLanguage['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
 
         $updateLanguage->update([
             'lang_name' => $request->input('lang_name'),
             'lang_id' => $request->input('lang_id'),
             'lang_image' => $request->input('lang_image'),
             'lang_category' => $request->input('lang_category'),
-            'updated_by' => 1,
+            'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([

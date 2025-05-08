@@ -25,14 +25,14 @@ Route::middleware('auth:sanctum', AuthorizeUser::class)->group(function () {
     Route::apiResource('departments', DepartmentController::class);
     Route::apiResource('batches', BatchController::class);
     Route::apiResource('sections', SectionController::class);
+    
+    Route::apiResource('qbcourses', QbCourseController::class);
+    Route::apiResource('qbtopics', QbTopicsController::class);
+    Route::apiResource('questiontags', QuestionTagController::class);
+    Route::apiResource('companytags', CompanyTagController::class);
+    Route::apiResource('compilers', CompilerController::class);
+    Route::apiResource('languages', LanguageController::class);
+    Route::apiResource('useracademics', UserAcademicController::class);
 });
 
 Route::post('login', [AuthController::class, 'authenticate'])->name('login');
-Route::apiResource('qbcourses', QbCourseController::class);
-Route::apiResource('qbtopics', QbTopicsController::class);
-
-Route::apiResource('questiontags', QuestionTagController::class);
-Route::apiResource('companytags', CompanyTagController::class);
-Route::apiResource('compilers', CompilerController::class);
-Route::apiResource('languages', LanguageController::class);
-Route::apiResource('useracademics', UserAcademicController::class);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\CompanyTag;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -18,8 +19,8 @@ class CompanyTagController extends Controller
         if ($companyTags == []) {
             return response()->json([
                 'message' => 'No Data found!',
-                'status' => 404
-            ], 404);
+                'status' => 200
+            ], 200);
         }
         return response()->json([
             'message' => 'tags fetched successfully!',
@@ -55,7 +56,7 @@ class CompanyTagController extends Controller
        
         $createdCompanyTags = CompanyTag::create([
             'tag_name' => $request->input('tag_name'),
-            'created_by' => null,
+            'created_by' => Auth::id() ?? null,
             'status' => 1
         ]);
         if (!$createdCompanyTags) {
@@ -124,11 +125,23 @@ class CompanyTagController extends Controller
                 'status' => 404
             ], 404);
         }
+        $authId = Auth::id();
+        if ($updateCompanyTag['updated_by'] != null) {
+            $updated_by_data = json_decode($updateCompanyTag['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
     
-        // Perform update
         $updateCompanyTag->update([
             'tag_name' => $request->input('tag_name'),
-            'updated_by' => 1,
+            'updated_by' => $updated_by_data ?? null,
         ]);
     
         // Return success response

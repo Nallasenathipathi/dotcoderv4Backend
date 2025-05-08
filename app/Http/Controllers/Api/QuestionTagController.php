@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\QuestionTag;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -18,8 +19,8 @@ class QuestionTagController extends Controller
         if ($tags == []) {
             return response()->json([
                 'message' => 'No Data found!',
-                'status' => 404
-            ], 404);
+                'status' => 200
+            ], 200);
         }
         return response()->json([
             'message' => 'Tags fetched successfully!',
@@ -55,7 +56,7 @@ class QuestionTagController extends Controller
 
         $createdTag = QuestionTag::create([
             'tag_name' => $request->input('tag_name'),
-            'created_by' => null,
+            'created_by' => Auth::id() ?? null,
             'status' => 1
         ]);
         if (!$createdTag) {
@@ -116,7 +117,22 @@ class QuestionTagController extends Controller
             ], 422);
         }
 
-        $updateTag = QuestionTag::where('status', 1)->select('id')->where('id', $id)->first();
+        $updateTag = QuestionTag::where('status', 1)->select('id','updated_by')->where('id', $id)->first();
+
+        $authId = Auth::id();
+        if ($updateTag['updated_by'] != null) {
+            $updated_by_data = json_decode($updateTag['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
+
 
         if (!$updateTag) {
             return response()->json([
@@ -127,7 +143,7 @@ class QuestionTagController extends Controller
 
         $updateTag->update([
             'tag_name' => $request->input('tag_name'),
-            'updated_by' => 1,
+            'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([
