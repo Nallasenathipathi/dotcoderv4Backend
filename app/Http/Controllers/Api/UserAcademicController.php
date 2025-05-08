@@ -19,7 +19,7 @@ class UserAcademicController extends Controller
                 'message' => 'No Data found!',
                 'data' => [],
                 'status' => 200
-            ],404);
+            ], 404);
         }
         return response()->json([
             'message' => 'Academics data fetched successfully!',
@@ -50,7 +50,7 @@ class UserAcademicController extends Controller
             ], 422);
         }
 
-        
+
         $createdAcademicData = UserAcademics::create([
             'user_id' => $request->input('user_id'),
             'college_id' => $request->input('college_id'),
@@ -152,8 +152,22 @@ class UserAcademicController extends Controller
                 'status' => 404
             ]);
         }
+        $authId = Auth::id();
+        if ($AcademicDelete['updated_by'] != null) {
+            $updated_by_data = json_decode($AcademicDelete['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
         $AcademicDelete->update([
-            'status' => 0
+            'status' => 0,
+            'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([

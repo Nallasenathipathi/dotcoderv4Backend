@@ -19,7 +19,8 @@ class CompanyTagController extends Controller
         if ($companyTags == []) {
             return response()->json([
                 'message' => 'No Data found!',
-                'status' => 200
+                'status' => 200,
+                'data' => []
             ], 200);
         }
         return response()->json([
@@ -53,7 +54,7 @@ class CompanyTagController extends Controller
             ], 422);
         }
 
-       
+
         $createdCompanyTags = CompanyTag::create([
             'tag_name' => $request->input('tag_name'),
             'created_by' => Auth::id() ?? null,
@@ -138,12 +139,12 @@ class CompanyTagController extends Controller
             $updated_by_data[] = $authId;
             $updated_by_data = json_encode($updated_by_data);
         }
-    
+
         $updateCompanyTag->update([
             'tag_name' => $request->input('tag_name'),
             'updated_by' => $updated_by_data ?? null,
         ]);
-    
+
         // Return success response
         return response()->json([
             'message' => 'Tag updated successfully!',
@@ -164,8 +165,22 @@ class CompanyTagController extends Controller
                 'status' => 404
             ]);
         }
+        $authId = Auth::id();
+        if ($CompanytagDelete['updated_by'] != null) {
+            $updated_by_data = json_decode($CompanytagDelete['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
         $CompanytagDelete->update([
-            'status' => 0
+            'status' => 0,
+            'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([

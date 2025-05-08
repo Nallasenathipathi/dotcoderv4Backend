@@ -18,7 +18,8 @@ class LanguageController extends Controller
         if ($Languages == []) {
             return response()->json([
                 'message' => 'No Data found!',
-                'status' => 200
+                'status' => 200,
+                'data' => [],
             ], 200);
         }
         return response()->json([
@@ -168,8 +169,22 @@ class LanguageController extends Controller
                 'status' => 404
             ]);
         }
+        $authId = Auth::id();
+        if ($LanguageDelete['updated_by'] != null) {
+            $updated_by_data = json_decode($LanguageDelete['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
         $LanguageDelete->update([
-            'status' => 0
+            'status' => 0,
+            'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([

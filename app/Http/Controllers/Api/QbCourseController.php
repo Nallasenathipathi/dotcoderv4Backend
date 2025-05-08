@@ -149,8 +149,22 @@ class QbCourseController extends Controller
                 'status' => 404
             ]);
         }
+        $authId = Auth::id();
+        if ($courseDelete->updated_by != null) {
+            $updated_by_data = json_decode($courseDelete['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
         $courseDelete->update([
-            'status' => 0
+            'status' => 0,
+            'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([

@@ -19,7 +19,8 @@ class QuestionTagController extends Controller
         if ($tags == []) {
             return response()->json([
                 'message' => 'No Data found!',
-                'status' => 200
+                'status' => 200,
+                'data' => []
             ], 200);
         }
         return response()->json([
@@ -117,7 +118,7 @@ class QuestionTagController extends Controller
             ], 422);
         }
 
-        $updateTag = QuestionTag::where('status', 1)->select('id','updated_by')->where('id', $id)->first();
+        $updateTag = QuestionTag::where('status', 1)->select('id', 'updated_by')->where('id', $id)->first();
 
         $authId = Auth::id();
         if ($updateTag['updated_by'] != null) {
@@ -165,8 +166,22 @@ class QuestionTagController extends Controller
                 'status' => 404
             ]);
         }
+        $authId = Auth::id();
+        if ($tagDelete['updated_by'] != null) {
+            $updated_by_data = json_decode($tagDelete['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
         $tagDelete->update([
-            'status' => 0
+            'status' => 0,
+            'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([
