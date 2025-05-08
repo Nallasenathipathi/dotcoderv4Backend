@@ -153,8 +153,22 @@ class BatchController extends Controller
                 'status' => 404
             ], 404);
         }
+        $authId = Auth::id();
+        if ($batchDelete->updated_by != null) {
+            $updated_by_data = json_decode($batchDelete['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
         $batchDelete->update([
-            'status' => 0
+            'status' => 0,
+            'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([

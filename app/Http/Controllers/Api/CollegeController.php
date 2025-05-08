@@ -116,7 +116,7 @@ class CollegeController extends Controller
         }
         $authId = Auth::id();
 
-        $updateCollege = College::where('status', 1)->select('id','updated_by')->where('id', $id)->first();
+        $updateCollege = College::where('status', 1)->select('id', 'updated_by')->where('id', $id)->first();
         // dd($updateCollege->updated_by,$updateCollege);
         if ($updateCollege->updated_by != null) {
             $updated_by_data = json_decode($updateCollege['updated_by'], true);
@@ -164,8 +164,23 @@ class CollegeController extends Controller
                 'status' => 404
             ]);
         }
+        $authId = Auth::id();
+        if ($clgDelete->updated_by != null) {
+            $updated_by_data = json_decode($clgDelete['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
+
         $clgDelete->update([
-            'status' => 0
+            'status' => 0,
+            'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([
