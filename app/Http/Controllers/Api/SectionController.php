@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Section;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -53,7 +54,7 @@ class SectionController extends Controller
 
         $createdSection = Section::create([
             'section_name' => $request->input('section_name'),
-            'created_by' => null,
+            'created_by' => Auth::id() ?? null,
             'status' => 1
         ]);
         if (!$createdSection) {
@@ -93,15 +94,6 @@ class SectionController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $updateSection = Section::where('status', 1)->where('id', $id)->select('id', 'section_name', 'created_by', 'updated_by')->first();
-
-        if (!$updateSection) {
-            return response()->json([
-                'message' => 'Section not found!',
-                'status' => 404
-            ], 404);
-        }
-
         $validator = Validator::make($request->all(), [
             'section_name' => [
                 'required',
@@ -119,10 +111,33 @@ class SectionController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
+        $updateSection = Section::where('status', 1)->where('id', $id)->select('id', 'section_name', 'created_by', 'updated_by')->first();
+
+        if (!$updateSection) {
+            return response()->json([
+                'message' => 'Section not found!',
+                'status' => 404
+            ], 404);
+        }
+        
+        $authId = Auth::id();
+        if ($updateSection['updated_by'] != null) {
+            $updated_by_data = json_decode($updateSection['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
+
 
         $updateSection->update([
             'section_name' => $request->input('section_name'),
-            'updated_by' => 1,
+            'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Department;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -55,7 +56,7 @@ class DepartmentController extends Controller
         $createdDept = Department::create([
             'department_name' => $request->input('department_name'),
             'department_short_name' => $request->input('department_short_name'),
-            'created_by' => null,
+            'created_by' => Auth::id() ?? null,
             'status' => 1
         ]);
         if (!$createdDept) {
@@ -95,14 +96,6 @@ class DepartmentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $updateDept = Department::where('status', 1)->select('id', 'department_name', 'department_short_name', 'created_by', 'updated_by')->first($id);
-
-        if (!$updateDept) {
-            return response()->json([
-                'message' => 'Department not found!',
-                'status' => 404
-            ], 404);
-        }
         $validator = Validator::make($request->all(), [
             'department_name' => 'required|max:255',
             'department_short_name' => [
@@ -122,11 +115,32 @@ class DepartmentController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
+        $updateDept = Department::where('status', 1)->select('id', 'department_name', 'department_short_name', 'created_by', 'updated_by')->first($id);
+
+        if (!$updateDept) {
+            return response()->json([
+                'message' => 'Department not found!',
+                'status' => 404
+            ], 404);
+        }
+        $authId = Auth::id();
+        if ($updateDept['updated_by'] != null) {
+            $updated_by_data = json_decode($updateDept['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
 
         $updateDept->update([
             'department_name' => $request->input('department_name'),
             'department_short_name' => $request->input('department_short_name'),
-            'updated_by' => 1,
+            'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Batch;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -52,7 +53,7 @@ class BatchController extends Controller
 
         $createdBatch = Batch::create([
             'batch_name' => $request->input('batch_name'),
-            'created_by' => null,
+            'created_by' => Auth::id() ?? null,
             'status' => 1
         ]);
         if (!$createdBatch) {
@@ -92,15 +93,7 @@ class BatchController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $updateBatch = Batch::where('status', 1)->where('id', $id)->select('id', 'batch_name', 'created_by', 'updated_by')->first();
-
-        if (!$updateBatch) {
-            return response()->json([
-                'message' => 'Department not found!',
-                'status' => 404
-            ], 404);
-        }
-
+        
         $validator = Validator::make($request->all(), [
             Rule::unique('batches', 'batch_name')->ignore($id)->where(function ($query) {
                 return $query->where('status', 1);
@@ -113,10 +106,31 @@ class BatchController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
+        $updateBatch = Batch::where('status', 1)->where('id', $id)->select('id', 'batch_name', 'created_by', 'updated_by')->first();
+
+        if (!$updateBatch) {
+            return response()->json([
+                'message' => 'Department not found!',
+                'status' => 404
+            ], 404);
+        }
+        $authId = Auth::id();
+        if ($updateBatch['updated_by'] != null) {
+            $updated_by_data = json_decode($updateBatch['updated_by'], true);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
 
         $updateBatch->update([
             'batch_name' => $request->input('batch_name'),
-            'updated_by' => 1,
+            'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\College;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -35,7 +36,7 @@ class CollegeController extends Controller
             'college_short_name' => [
                 'required',
                 'max:50',
-                Rule::unique('colleges','college_short_name')->where(function ($query) {
+                Rule::unique('colleges', 'college_short_name')->where(function ($query) {
                     return $query->where('status', 1);
                 }),
             ],
@@ -53,7 +54,7 @@ class CollegeController extends Controller
             'college_name' => $request->input('college_name'),
             'college_short_name' => $request->input('college_short_name'),
             'college_image' => $request->input('college_image'),
-            'created_by' => null,
+            'created_by' => Auth::id() ?? null,
             'status' => 1
         ]);
         if (!$createdCollege) {
@@ -96,7 +97,7 @@ class CollegeController extends Controller
             'college_short_name' => [
                 'required',
                 'max:50',
-                Rule::unique('colleges','college_short_name') 
+                Rule::unique('colleges', 'college_short_name')
                     ->ignore($id)
                     ->where(function ($query) {
                         return $query->where('status', 1);
@@ -112,8 +113,23 @@ class CollegeController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
+        $authId = Auth::id();
 
-        $updateCollege = College::where('status', 1)->select('id')->where('id', $id)->first();
+        $updateCollege = College::where('status', 1)->select('id','updated_by')->where('id', $id)->first();
+        // dd($updateCollege->updated_by,$updateCollege);
+        if ($updateCollege->updated_by != null) {
+            $updated_by_data = json_decode($updateCollege['updated_by'], true);
+            // dd($updated_by_data);
+            if (end($updated_by_data) == $authId) {
+                $updated_by_data = json_encode($updated_by_data);
+            } else {
+                $updated_by_data[] = $authId;
+                $updated_by_data = json_encode($updated_by_data);
+            }
+        } else {
+            $updated_by_data[] = $authId;
+            $updated_by_data = json_encode($updated_by_data);
+        }
 
         if (!$updateCollege) {
             return response()->json([
@@ -126,7 +142,7 @@ class CollegeController extends Controller
             'college_name' => $request->input('college_name'),
             'college_short_name' => $request->input('college_short_name'),
             'college_image' => $request->input('college_image'),
-            'updated_by' => 1,
+            'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([
