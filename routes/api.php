@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BatchController;
+use App\Http\Controllers\Api\BulkUploadController;
 use App\Http\Controllers\Api\CollegeController;
 use App\Http\Controllers\Api\CompanyTagController;
 use App\Http\Controllers\Api\CompilerController;
@@ -30,9 +31,9 @@ Route::middleware('auth:sanctum', AuthorizeUser::class)->group(function () {
     Route::apiResource('qbtopics', QbTopicsController::class);
     Route::apiResource('questiontags', QuestionTagController::class);
     Route::apiResource('companytags', CompanyTagController::class);
-    Route::apiResource('compilers', CompilerController::class);
     Route::apiResource('languages', LanguageController::class);
     Route::apiResource('useracademics', UserAcademicController::class);
+    Route::post('bulkuploads', [BulkUploadController::class, 'store'])->name('bulkuploads');
 });
 
 Route::post('login', [AuthController::class, 'authenticate'])->name('login');
