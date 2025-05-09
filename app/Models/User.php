@@ -29,6 +29,7 @@ class User extends Authenticatable
         'contact_number',
         'profile',
         'status',
+        'remember_token',
         'created_by',
         'updated_by',
     ];
