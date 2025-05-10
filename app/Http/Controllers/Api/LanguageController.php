@@ -14,7 +14,7 @@ class LanguageController extends Controller
     //
     public function index()
     {
-        $Languages = Languages::where('status', 1)->select('lang_name', 'lang_id', 'lang_image', 'lang_category', 'status', 'created_by', 'updated_by')->get()->toArray();
+        $Languages = Languages::where('status', 1)->select('id' ,'lang_name', 'lang_id', 'lang_image', 'lang_category', 'status', 'created_by', 'updated_by')->get()->toArray();
         return response()->json([
             'message' => 'Languages fetched successfully!',
             'data' => $Languages,
@@ -72,7 +72,7 @@ class LanguageController extends Controller
      */
     public function show(string $id)
     {
-        $Lanugage = Languages::where('status', 1)->select('id')->where('id', $id)->first();
+        $Lanugage = Languages::where('status', 1)->select('id','lang_name', 'lang_id', 'lang_image', 'lang_category')->where('id', $id)->first();
         if (!$Lanugage) {
             return response()->json([
                 'message' => 'Lanugage not found!',
