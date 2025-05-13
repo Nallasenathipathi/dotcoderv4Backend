@@ -22,18 +22,19 @@ class UserFactory extends Factory
      * @return array<string, mixed>
      */
     public function definition(): array
-{
-    return [
-        'name' => fake()->name(),
-        'email' => fake()->unique()->safeEmail(),
-        'email_verified_at' => now(),
-        'password' => static::$password ??= Hash::make('123456'),
-        'remember_token' => Str::random(10),
-        'dob' => fake()->date('Y-m-d', '2005-01-01'),
-        'gender' => fake()->randomElement([0, 1]),
-        'role' => fake()->numberBetween(1, 2), 
-    ];
-}
+    {
+        return [
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'email_verified_at' => now(),
+            'password' => static::$password ??= Hash::make('123456'),
+            'remember_token' => Str::random(10),
+            'dob' => fake()->date('Y-m-d', '2005-01-01'),
+            'gender' => fake()->randomElement([0, 1]),
+            'role' => fake()->numberBetween(1, 6),
+            'status' => 1
+        ];
+    }
 
 
     /**
@@ -41,7 +42,7 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
