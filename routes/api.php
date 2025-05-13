@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BatchController;
 use App\Http\Controllers\Api\BulkUploadController;
+use App\Http\Controllers\Api\CollegeAdminController;
 use App\Http\Controllers\Api\CollegeController;
 use App\Http\Controllers\Api\CompanyTagController;
 use App\Http\Controllers\Api\CompilerController;
@@ -12,6 +13,8 @@ use App\Http\Controllers\Api\QbCourseController;
 use App\Http\Controllers\Api\QbTopicsController;
 use App\Http\Controllers\Api\QuestionTagController;
 use App\Http\Controllers\Api\SectionController;
+use App\Http\Controllers\Api\StaffController;
+use App\Http\Controllers\Api\TrainerController;
 use App\Http\Controllers\Api\UserAcademicController;
 use App\Http\Middleware\AuthorizeUser;
 use Illuminate\Http\Request;
@@ -37,3 +40,6 @@ Route::middleware('auth:sanctum', AuthorizeUser::class)->group(function () {
 });
 
 Route::post('login', [AuthController::class, 'authenticate'])->name('login');
+Route::apiResource('trainer', TrainerController::class);
+Route::apiResource('staff', StaffController::class);
+Route::apiResource('collegeAdmin', CollegeAdminController::class);
