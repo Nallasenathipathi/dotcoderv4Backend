@@ -28,7 +28,7 @@ class AuthController extends Controller
         }
 
         if (!Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'The password does not match with the provided email.', 'status' => 401], 401);
+            return response()->json(['message' => 'The password does not match with the provided email.', 'status' => 422,'errors' =>['password'=>['The password does not match with the provided email.']]], 422);
         }
         // $token = $user->createToken('Auth-token')->plainTextToken;
         // $user->tokens()->where('name', 'Auth-token')->latest()->first()->update([
