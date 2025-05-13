@@ -70,7 +70,7 @@ class CompanyTagController extends Controller
      */
     public function show(string $id)
     {
-        $CompanyTag = CompanyTag::where('status', 1)->select('id')->where('id', $id)->first();
+        $CompanyTag = CompanyTag::where('status', 1)->select('id', 'tag_name')->where('id', $id)->first();
         if (!$CompanyTag) {
             return response()->json([
                 'message' => 'Tag not found!',
