@@ -13,7 +13,7 @@ class CompilerController extends Controller
     //
     public function index()
     {
-        $compilers = Compilers::where('status', 1)->select('api', 'count', 'status', 'created_by', 'updated_by')->get()->toArray();
+        $compilers = Compilers::where('status', 1)->select('id','api', 'count', 'status', 'created_by', 'updated_by')->get()->toArray();
         
         return response()->json([
             'message' => 'compilers fetched successfully!',
@@ -116,13 +116,11 @@ class CompilerController extends Controller
             $updated_by_data = json_encode($updated_by_data);
         }
     
-        // Perform update
         $updateCompiler->update([
             'api' => $request->input('api'),
             'updated_by' => 1,
         ]);
     
-        // Return success response
         return response()->json([
             'message' => 'Compiler updated successfully!',
             'status' => 200
