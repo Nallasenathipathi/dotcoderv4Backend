@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum', AuthorizeUser::class)->group(function () {
     Route::apiResource('companytags', CompanyTagController::class);
     Route::apiResource('languages', LanguageController::class);
     Route::apiResource('useracademics', UserAcademicController::class);
+    Route::apiResource('compilers', CompilerController::class);
     Route::post('bulkuploads', [BulkUploadController::class, 'store'])->name('bulkuploads');
 });
 
