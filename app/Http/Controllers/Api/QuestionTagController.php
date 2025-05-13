@@ -16,7 +16,7 @@ class QuestionTagController extends Controller
     public function index()
     {
         $tags = QuestionTag::where('status', 1)->select('id', 'tag_name', 'status', 'created_by', 'updated_by')->get()->toArray();
-        
+
         return response()->json([
             'message' => 'Tags fetched successfully!',
             'data' => $tags,
@@ -71,7 +71,7 @@ class QuestionTagController extends Controller
      */
     public function show(string $id)
     {
-        $tag = QuestionTag::where('status', 1)->select('id')->where('id', $id)->first();
+        $tag = QuestionTag::where('status', 1)->select('id', 'tag_name')->where('id', $id)->first();
         if (!$tag) {
             return response()->json([
                 'message' => 'Tag not found!',
