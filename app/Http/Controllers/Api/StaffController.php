@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\UserAcademics;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -17,7 +18,53 @@ class StaffController extends Controller
      */
     public function index()
     {
-        $staffs = User::where('status', 1)->where('role', 6)->select('id', 'name', 'email', 'password', 'gender', 'dob', 'role', 'contact_number', 'profile', 'created_by', 'updated_by')->get()->toArray();
+        // $staffs = User::where('status', 1)->where('role', 6)->select('id', 'name', 'email', 'password', 'gender', 'dob', 'role', 'contact_number', 'profile', 'created_by', 'updated_by')->get();
+        // $staffs = User::where('status', 1)
+        //     ->where('role', 6)
+        //     ->with(['academic.college:id,college_name'])
+        //     ->select('id', 'name', 'email', 'gender', 'dob', 'role', 'contact_number', 'profile', 'created_by', 'updated_by')
+        //     ->get();
+        // $staffs = $staffs->map(function ($staff) {
+        //     $staff->college_name = $staff->academic?->college?->college_name ?? null;
+        //     unset($staff->academic);
+        //     return $staff;
+        // });
+
+        // return response()->json([
+        //     'message' => 'Data fetched successfully!',
+        //     'data' => $staffs,
+        //     'status' => 200
+        // ]);
+
+        $staffs = DB::table('users')
+            ->leftJoin('user_academics', 'users.id', '=', 'user_academics.user_id')
+            ->leftJoin('colleges', 'user_academics.college_id', '=', 'colleges.id')
+            ->where('users.status', 1)
+            ->where('users.role', 6)
+            ->select(
+                'users.id',
+                'users.name',
+                'users.email',
+                'users.gender',
+                'users.dob',
+                'users.role',
+                'users.contact_number',
+                'users.profile',
+                'users.created_by',
+                'users.updated_by',
+                'colleges.college_name as college_name'
+            )
+            ->get();
+
+        // $staffs = $staffs->map(function ($staff) {
+        //     $academic = UserAcademics::where('user_id', $staff->id)
+        //         ->with('college:id,college_name') // eager load college name
+        //         ->first();
+
+        //     $staff->college_name = $academic?->college?->college_name ?? null;
+
+        //     return $staff;
+        // });
 
         return response()->json([
             'message' => 'Data fetched successfully!',
@@ -87,7 +134,27 @@ class StaffController extends Controller
      */
     public function show(string $id)
     {
-        $staff = User::where('status', 1)->select('id', 'name', 'email', 'password', 'gender', 'dob', 'role', 'contact_number', 'profile', 'created_by', 'updated_by')->where('id', $id)->first();
+        // $staff = User::where('status', 1)->select('id', 'name', 'email', 'password', 'gender', 'dob', 'role', 'contact_number', 'profile', 'created_by', 'updated_by')->where('id', $id)->first();
+        $staff = DB::table('users')
+            ->leftJoin('user_academics', 'users.id', '=', 'user_academics.user_id')
+            ->leftJoin('colleges', 'user_academics.college_id', '=', 'colleges.id')
+            ->where('users.status', 1)
+            ->where('users.id', $id)
+            ->select(
+                'users.id',
+                'users.name',
+                'users.email',
+                'users.password',
+                'users.gender',
+                'users.dob',
+                'users.role',
+                'users.contact_number',
+                'users.profile',
+                'users.created_by',
+                'users.updated_by',
+                'colleges.college_name'
+            )
+            ->first();
 
         if (!$staff) {
             return response()->json([
@@ -163,9 +230,11 @@ class StaffController extends Controller
             'profile' => $request->input('profile'),
             'updated_by' => $updated_by_data ?? null,
         ]);
-        $userAcademics->update([
-            'college_id' => $request->input('college_id'),
-        ]);
+        if ($userAcademics) {
+            $userAcademics->update([
+                'college_id' => $request->input('college_id'),
+            ]);
+        }
 
         return response()->json([
             'message' => 'Data updated successfully!',

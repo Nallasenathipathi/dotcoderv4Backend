@@ -3,23 +3,23 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\QbTopics;
+use App\Models\MaterialBank;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
-class QbTopicsController extends Controller
+class MaterialController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $topics = QbTopics::with('course:id,course_name')->where('status', 1)->select('id', 'course_id', 'topic_tag_id', 'topic_name', 'created_by', 'updated_by')->get()->toArray();
+        $materials = MaterialBank::where('status', 1)->select('id', 'course_id', 'topic_id', 'path', 'file_type', 'qb_type', 'created_by', 'updated_by')->get()->toArray();
 
         return response()->json([
             'message' => 'fetched successfully!',
-            'data' => $topics,
+            'data' => $materials,
             'status' => 200
         ]);
     }
@@ -31,8 +31,10 @@ class QbTopicsController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'course_id' => 'required',
-            'topic_tag_id' => 'required',
-            'topic_name' => 'required',
+            'topic_id' => 'required',
+            'path' => 'required',
+            'file_type' => 'required',
+            'qb_type' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -42,21 +44,23 @@ class QbTopicsController extends Controller
             ], 422);
         }
 
-        $createdCourse = QbTopics::create([
+        $createdMaterial = MaterialBank::create([
             'course_id' => $request->input('course_id'),
-            'topic_tag_id' => $request->input('topic_tag_id'),
-            'topic_name' => $request->input('topic_name'),
+            'topic_id' => $request->input('topic_id'),
+            'path' => $request->input('path'),
+            'file_type' => $request->input('file_type'),
+            'qb_type' => $request->input('qb_type'),
             'created_by' => Auth::id() ?? null,
             'status' => 1
         ]);
-        if (!$createdCourse) {
+        if (!$createdMaterial) {
             return response()->json([
                 'message' => 'Something went wrong!!',
                 'status' => 500
             ]);
         }
         return response()->json([
-            'message' => 'Qb Topics created successfully!!',
+            'message' => 'Data created successfully!!',
             'status' => 201
         ]);
     }
@@ -66,18 +70,18 @@ class QbTopicsController extends Controller
      */
     public function show(string $id)
     {
-        $topics = QbTopics::with('course:id,course_name')->where('status', 1)->select('id', 'course_id', 'topic_tag_id', 'topic_name', 'created_by', 'updated_by')->where('id', $id)->first();
+        $material = MaterialBank::where('status', 1)->select('id', 'course_id', 'topic_id', 'path', 'file_type', 'qb_type', 'created_by', 'updated_by')->where('id', $id)->first();
 
-        if (!$topics) {
+        if (!$material) {
             return response()->json([
                 'message' => 'Data not found!',
-                'status' => 404
+                'status' => 404,
             ], 404);
         }
-        $topics = json_decode(json_encode($topics), true);
+        $material = json_decode(json_encode($material), true);
         return response()->json([
-            'message' => 'Qb topics fetched successfully!',
-            'data' => $topics,
+            'message' => 'Data fetched successfully!',
+            'data' => $material,
             'status' => 200
         ], 200);
     }
@@ -89,8 +93,10 @@ class QbTopicsController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'course_id' => 'required',
-            'topic_tag_id' => 'required',
-            'topic_name' => 'required',
+            'topic_id' => 'required',
+            'path' => 'required',
+            'file_type' => 'required',
+            'qb_type' => 'required',
         ]);
 
 
@@ -100,11 +106,13 @@ class QbTopicsController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-
-        $updateTopics = QbTopics::where('status', 1)->select('id', 'updated_by')->where('id', $id)->first();
         $authId = Auth::id();
-        if ($updateTopics['updated_by'] != null) {
-            $updated_by_data = json_decode($updateTopics['updated_by'], true);
+
+        $updateMaterial = MaterialBank::where('status', 1)->select('id', 'updated_by')->where('id', $id)->first();
+        // dd($updateCollege->updated_by,$updateCollege);
+        if ($updateMaterial->updated_by != null) {
+            $updated_by_data = json_decode($updateMaterial['updated_by'], true);
+            // dd($updated_by_data);
             if (end($updated_by_data) == $authId) {
                 $updated_by_data = json_encode($updated_by_data);
             } else {
@@ -116,22 +124,24 @@ class QbTopicsController extends Controller
             $updated_by_data = json_encode($updated_by_data);
         }
 
-        if (!$updateTopics) {
+        if (!$updateMaterial) {
             return response()->json([
-                'message' => 'Topics not found!',
+                'message' => 'Data not found!',
                 'status' => 404
             ], 404);
         }
 
-        $updateTopics->update([
-            'course_id' => $request->input('course_name'),
-            'topic_tag_id' => $request->input('topic_tag_id'),
-            'topic_name' => $request->input('topic_name'),
+        $updateMaterial->update([
+            'course_id' => $request->input('course_id'),
+            'topic_id' => $request->input('topic_id'),
+            'path' => $request->input('path'),
+            'file_type' => $request->input('file_type'),
+            'qb_type' => $request->input('qb_type'),
             'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([
-            'message' => 'Qb Topics updated successfully!',
+            'message' => 'Data updated successfully!',
             'status' => 200
         ], 200);
     }
@@ -141,17 +151,17 @@ class QbTopicsController extends Controller
      */
     public function destroy(string $id)
     {
-        $topicsDelete = QbTopics::where('id', $id)->where('status', 1)->first();
+        $materialDelete = MaterialBank::where('id', $id)->where('status', 1)->first();
 
-        if (!$topicsDelete) {
+        if (!$materialDelete) {
             return response()->json([
-                'message' => 'Topics not found!',
+                'message' => 'Data not found!',
                 'status' => 404
             ]);
         }
         $authId = Auth::id();
-        if ($topicsDelete['updated_by'] != null) {
-            $updated_by_data = json_decode($topicsDelete['updated_by'], true);
+        if ($materialDelete->updated_by != null) {
+            $updated_by_data = json_decode($materialDelete['updated_by'], true);
             if (end($updated_by_data) == $authId) {
                 $updated_by_data = json_encode($updated_by_data);
             } else {
@@ -162,13 +172,14 @@ class QbTopicsController extends Controller
             $updated_by_data[] = $authId;
             $updated_by_data = json_encode($updated_by_data);
         }
-        $topicsDelete->update([
+
+        $materialDelete->update([
             'status' => 0,
             'updated_by' => $updated_by_data ?? null,
         ]);
 
         return response()->json([
-            'message' => 'Topic deleted successfully!',
+            'message' => 'Data deleted successfully!',
             'status' => 200
         ]);
     }
