@@ -13,8 +13,8 @@ class CompilerController extends Controller
     //
     public function index()
     {
-        $compilers = Compilers::where('status', 1)->select('id','api', 'count', 'status', 'created_by', 'updated_by')->get()->toArray();
-        
+        $compilers = Compilers::where('status', 1)->select('id', 'api', 'count', 'status', 'created_by', 'updated_by')->get()->toArray();
+
         return response()->json([
             'message' => 'compilers fetched successfully!',
             'data' => $compilers,
@@ -38,7 +38,7 @@ class CompilerController extends Controller
             ], 422);
         }
 
-       
+
         $createdCompiler = Compilers::create([
             'api' => $request->input('api'),
             'count' => 0,
@@ -85,7 +85,7 @@ class CompilerController extends Controller
         $validator = Validator::make($request->all(), [
             'api' => 'required|string|max:255' . $id,
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation failed',
@@ -94,7 +94,7 @@ class CompilerController extends Controller
         }
 
         $updateCompiler = Compilers::where('status', 1)->select('id')->where('id', $id)->first();
-    
+
         if (!$updateCompiler) {
             return response()->json([
                 'message' => 'Compiler not found!',
@@ -115,18 +115,18 @@ class CompilerController extends Controller
             $updated_by_data[] = $authId;
             $updated_by_data = json_encode($updated_by_data);
         }
-    
+
         $updateCompiler->update([
             'api' => $request->input('api'),
             'updated_by' => 1,
         ]);
-    
+
         return response()->json([
             'message' => 'Compiler updated successfully!',
             'status' => 200
         ], 200);
     }
-    
+
 
     /**
      * Remove the specified resource from storage.
@@ -161,6 +161,31 @@ class CompilerController extends Controller
 
         return response()->json([
             'message' => 'Compiler deleted successfully!',
+            'status' => 200
+        ]);
+    }
+
+    public function getCompilers()
+    {
+        $compiler = Compilers::select('id', 'count', 'api')
+            ->where('status', 1)
+            ->get()
+            ->toArray();
+
+        if ($compiler != null && $compiler != []) {
+            if ($compiler[0]['count'] >= count($compiler) - 1) {
+                $count = 0;
+            } else {
+                $count = $compiler[0]['count'] + 1;
+            }
+            $firstid = $compiler[0]['id'];
+            Compilers::where('id', $firstid)->update([
+                'count' => $count,
+            ]);
+        }
+        return response()->json([
+            'message' => 'Compiler fetched successfully!',
+            'data' => $compiler,
             'status' => 200
         ]);
     }

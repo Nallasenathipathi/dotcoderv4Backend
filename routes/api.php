@@ -39,6 +39,7 @@ Route::middleware('auth:sanctum', AuthorizeUser::class)->group(function () {
     Route::apiResource('languages', LanguageController::class);
     Route::apiResource('useracademics', UserAcademicController::class);
     Route::apiResource('compilers', CompilerController::class);
+    Route::get('getcompilers', [CompilerController::class, 'getCompilers']);
     Route::post('bulkuploads', [BulkUploadController::class, 'store'])->name('bulkuploads');
 });
 
@@ -48,4 +49,4 @@ Route::apiResource('staff', StaffController::class);
 Route::apiResource('collegeAdmin', CollegeAdminController::class);
 Route::apiResource('content', ContentController::class);
 Route::apiResource('qbtopics', QbTopicsController::class);
-Route::apiResource('materials',MaterialController::class);
+Route::apiResource('materials', MaterialController::class);
